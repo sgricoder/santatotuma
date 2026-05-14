@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\android\\app/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Bash(flutter analyze:*)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(/C:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\inspection\\pages/**)",
+      "Read(//c/Users/sebas/AppData/Local/Pub/Cache/hosted/pub.dev/youtube_player_flutter-9.1.1/lib/src/player/**)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter build:*)",
+      "Bash(npx claude-code-templates@latest:*)",
+      "Bash(curl:*)",
+      "Bash(dir:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(flutter clean:*)",
+      "Bash(flutter run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAgregar validaciones de negocio para modo offline y arreglar errores de SpeedDial\n\n- Actualizada dependencia flutter_speed_dial a versión de GitHub con fix de overlay\n- Agregadas validaciones antes de guardar offline:\n  * Firma obligatoria al finalizar inspección\n  * Todas las preguntas que aplican deben estar respondidas\n- Arreglado error de widgets desmontados en _unfocusAll\\(\\)\n- Las validaciones ahora se aplican tanto en modo online como offline\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "c:\\Users\\sebas\\Documents\\projects\\kuvantyRemaster\\lib\\src\\assets"
+    ]
+  }
+}

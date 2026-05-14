@@ -1,0 +1,74 @@
+name: satatotumapp
+description: "App de gestión para Santa Totuma - Totumas de patacón rellenas"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Estado, navegación e inyección de dependencias
+  get: ^4.6.6
+
+  # Firebase
+  firebase_core: ^3.13.0
+  cloud_firestore: ^5.6.5
+  firebase_auth: ^5.5.2
+  firebase_storage: ^12.4.4
+
+  # Tipografía (Cormorant Garamond + Nunito)
+  google_fonts: ^6.2.1
+
+  # Imágenes de red con caché
+  cached_network_image: ^3.4.1
+
+  # Gráficos para ventas
+  fl_chart: ^0.69.0
+
+  # Formato de fechas y moneda
+  intl: ^0.20.2
+
+  # Generación de IDs únicos
+  uuid: ^4.5.1
+
+  # Persistencia local (contador de órdenes offline)
+  shared_preferences: ^2.3.5
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/totuma.png
+    - assets/palitos.png
+    - assets/chps.png
+    - assets/platano.png
+    - assets/cocacola1.png
+    - assets/cocacola4.png
+    - assets/posto1.png
+    - assets/postobon4.png
+    - assets/aguaCristal.png
+    - assets/logoredondo.png
+    - assets/bancolombiaIcon.png
+
+flutter_launcher_icons:
+  android: launcher_icon
+  ios: true
+  image_path: assets/logoredondo.png
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: assets/logoredondo.png
+  windows:
+    generate: true
+    image_path: assets/logoredondo.png
+    icon_size: 48
