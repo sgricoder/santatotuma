@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/order_model.dart';
 import '../../data/repositories/order_repository.dart';
 
@@ -161,13 +162,13 @@ class _CobroSinMesaSheetState extends State<_CobroSinMesaSheet> {
     HapticFeedback.selectionClick();
     setState(() {
       _recibido = v;
-      _inputCtrl.text = v.toInt().toString();
+      _inputCtrl.text = ThousandsFormatter.format(v);
     });
     _focusNode.unfocus();
   }
 
   void _onTextoChanged(String text) {
-    setState(() => _recibido = double.tryParse(text) ?? 0);
+    setState(() => _recibido = ThousandsFormatter.parse(text) ?? 0);
   }
 
   @override
@@ -476,6 +477,7 @@ class _KPanelEfectivo extends StatelessWidget {
           controller: inputCtrl,
           focusNode: focusNode,
           keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
           onChanged: onTexto,
           style: GoogleFonts.nunito(
             fontSize: 22,

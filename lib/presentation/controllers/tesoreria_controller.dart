@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/order_model.dart';
 import '../../data/models/tesoreria_model.dart';
 import '../../data/repositories/cash_register_repository.dart';
@@ -72,6 +73,16 @@ class TesoreriaController extends GetxController {
     );
   }
 
+  void abrirDialogoConsignacion(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ConsignacionBancolombiaSheet(ctrl: this),
+    );
+  }
+
   void abrirDialogoGasto(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -88,6 +99,49 @@ class TesoreriaController extends GetxController {
       await _repo.inicializar(saldoInicial);
     } catch (e) {
       Get.snackbar('Error', 'No se pudo configurar la tesorería',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      procesando.value = false;
+    }
+  }
+
+  Future<double> getSaldoBancolombiaHoy() async {
+    try {
+      final hoy = DateTime.now();
+      final pedidos = await _orderRepo.getPorFecha(
+        DateTime(hoy.year, hoy.month, hoy.day),
+        DateTime(hoy.year, hoy.month, hoy.day, 23, 59, 59),
+      );
+      return pedidos
+          .where((p) => p.metodoPago == MetodoPago.bancolombia)
+          .fold<double>(0.0, (s, p) => s + p.total);
+    } catch (_) {
+      return 0.0;
+    }
+  }
+
+  Future<void> consignarBancolombia(double monto) async {
+    procesando.value = true;
+    try {
+      final hoy = DateTime.now();
+      final fecha = DateFormat('yyyy-MM-dd').format(hoy);
+      final mov = MovimientoTes(
+        id: '',
+        tipo: TipoMovimiento.consignacionBancolombia,
+        concepto: 'Consignación Bancolombia $fecha',
+        monto: monto,
+        hora: DateTime.now(),
+      );
+      await _repo.registrarMovimiento(mov);
+      Get.snackbar(
+        'Consignación registrada',
+        '${CurrencyFormatter.format(monto)} ingresados a tesorería',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(12),
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'No se pudo registrar la consignación',
           snackPosition: SnackPosition.BOTTOM);
     } finally {
       procesando.value = false;
@@ -188,7 +242,7 @@ class _InicioSheetState extends State<_InicioSheet> {
   }
 
   Future<void> _confirmar() async {
-    final val = double.tryParse(_monto.text.replaceAll(',', '.'));
+    final val = ThousandsFormatter.parse(_monto.text);
     if (val == null || val < 0) {
       setState(() => _error = 'Ingresa un monto válido');
       return;
@@ -209,6 +263,7 @@ class _InicioSheetState extends State<_InicioSheet> {
           controller: _monto,
           autofocus: true,
           keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
           decoration: InputDecoration(
             labelText: 'Saldo inicial',
             prefixText: r'$ ',
@@ -261,7 +316,7 @@ class _TransferenciaSheetState extends State<_TransferenciaSheet> {
   }
 
   Future<void> _confirmar() async {
-    final val = double.tryParse(_monto.text.replaceAll(',', '.'));
+    final val = ThousandsFormatter.parse(_monto.text);
     if (val == null || val <= 0) {
       setState(() => _error = 'Ingresa un monto válido');
       return;
@@ -331,6 +386,7 @@ class _TransferenciaSheetState extends State<_TransferenciaSheet> {
             controller: _monto,
             autofocus: true,
             keyboardType: TextInputType.number,
+            inputFormatters: [ThousandsFormatter()],
             decoration: InputDecoration(
               labelText: '¿Cuánto transferir?',
               prefixText: r'$ ',
@@ -345,6 +401,119 @@ class _TransferenciaSheetState extends State<_TransferenciaSheet> {
             onTap: _confirmar,
           ),
         ],
+      ],
+    );
+  }
+}
+
+// ── Sheet: consignación Bancolombia ──────────────────────────────────────
+
+class _ConsignacionBancolombiaSheet extends StatefulWidget {
+  final TesoreriaController ctrl;
+  const _ConsignacionBancolombiaSheet({required this.ctrl});
+
+  @override
+  State<_ConsignacionBancolombiaSheet> createState() =>
+      _ConsignacionBancolombiaSheetState();
+}
+
+class _ConsignacionBancolombiaSheetState
+    extends State<_ConsignacionBancolombiaSheet> {
+  final _monto = TextEditingController();
+  String? _error;
+  double? _ventasBancolombia;
+  bool _cargando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarVentas();
+  }
+
+  Future<void> _cargarVentas() async {
+    final total = await widget.ctrl.getSaldoBancolombiaHoy();
+    if (mounted) {
+      setState(() {
+        _ventasBancolombia = total;
+        _cargando = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _monto.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirmar() async {
+    final val = ThousandsFormatter.parse(_monto.text);
+    if (val == null || val <= 0) {
+      setState(() => _error = 'Ingresa un monto válido');
+      return;
+    }
+    Get.back();
+    await widget.ctrl.consignarBancolombia(val);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _BaseSheet(
+      titulo: 'Consignación Bancolombia',
+      subtitulo: 'Registra pagos digitales recibidos hoy',
+      icono: Icons.account_balance_wallet_outlined,
+      colorIcono: const Color(0xFF1E88E5),
+      children: [
+        if (_cargando)
+          const Center(child: CircularProgressIndicator())
+        else if ((_ventasBancolombia ?? 0) > 0) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E88E5).withAlpha(15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF1E88E5).withAlpha(60),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Ventas Bancolombia hoy',
+                  style: TextStyle(fontSize: 13, color: AppColors.cafeMedio),
+                ),
+                Text(
+                  CurrencyFormatter.format(_ventasBancolombia!),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E88E5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        TextField(
+          controller: _monto,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
+          decoration: InputDecoration(
+            labelText: '¿Cuánto consignar?',
+            prefixText: r'$ ',
+            errorText: _error,
+            prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
+          ),
+        ),
+        const SizedBox(height: 24),
+        _BotonConfirmar(
+          label: 'Registrar consignación',
+          color: const Color(0xFF1E88E5),
+          onTap: _confirmar,
+        ),
       ],
     );
   }
@@ -375,7 +544,7 @@ class _GastoTesSheetState extends State<_GastoTesSheet> {
   }
 
   Future<void> _confirmar() async {
-    final montoVal = double.tryParse(_monto.text.replaceAll(',', '.'));
+    final montoVal = ThousandsFormatter.parse(_monto.text);
     setState(() {
       _errorConcepto =
           _concepto.text.trim().isEmpty ? 'Escribe un concepto' : null;
@@ -413,6 +582,7 @@ class _GastoTesSheetState extends State<_GastoTesSheet> {
         TextField(
           controller: _monto,
           keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
           decoration: InputDecoration(
             labelText: 'Monto',
             prefixText: r'$ ',

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/inventory_model.dart';
 import '../../data/repositories/inventory_repository.dart';
 
@@ -282,8 +283,7 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
     });
     try {
       if (_tab.index == 0) {
-        final costoVal =
-            double.tryParse(_costo.text.replaceAll(',', '.')) ?? 0.0;
+        final costoVal = ThousandsFormatter.parse(_costo.text) ?? 0.0;
         await widget.ctrl.registrarEntrada(
           insumoId: widget.insumo.id,
           cantidad: cantidadVal,
@@ -440,8 +440,8 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
                         children: [
                           TextField(
                             controller: _costo,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [ThousandsFormatter()],
                             decoration: const InputDecoration(
                               labelText: 'Costo total (opcional)',
                               prefixIcon: Icon(Icons.attach_money),

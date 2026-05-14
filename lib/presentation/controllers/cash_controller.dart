@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/cash_register_model.dart';
 import '../../data/models/order_model.dart';
 import '../../data/repositories/cash_register_repository.dart';
@@ -181,7 +182,7 @@ class _AperturaSheetState extends State<_AperturaSheet> {
   }
 
   Future<void> _confirmar() async {
-    final val = double.tryParse(_monto.text.replaceAll(',', '.').replaceAll('.', ''));
+    final val = ThousandsFormatter.parse(_monto.text);
     if (val == null || val < 0) {
       setState(() => _error = 'Ingresa un monto válido');
       return;
@@ -208,6 +209,7 @@ class _AperturaSheetState extends State<_AperturaSheet> {
           controller: _monto,
           autofocus: true,
           keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
           decoration: InputDecoration(
             labelText: 'Monto inicial',
             prefixText: '\$ ',
@@ -251,8 +253,7 @@ class _GastoSheetState extends State<_GastoSheet> {
   }
 
   Future<void> _confirmar() async {
-    final montoVal =
-        double.tryParse(_monto.text.replaceAll(',', '.').replaceAll('.', ''));
+    final montoVal = ThousandsFormatter.parse(_monto.text);
     setState(() {
       _errorConcepto =
           _concepto.text.trim().isEmpty ? 'Escribe un concepto' : null;
@@ -290,6 +291,7 @@ class _GastoSheetState extends State<_GastoSheet> {
         TextField(
           controller: _monto,
           keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
           decoration: InputDecoration(
             labelText: 'Monto',
             prefixText: '\$ ',
@@ -359,8 +361,7 @@ class _CierreSheetState extends State<_CierreSheet> {
   }
 
   Future<void> _confirmar() async {
-    final val =
-        double.tryParse(_monto.text.replaceAll(',', '.').replaceAll('.', ''));
+    final val = ThousandsFormatter.parse(_monto.text);
     if (val == null || val < 0) {
       setState(() => _error = 'Ingresa un monto válido');
       return;
@@ -407,6 +408,7 @@ class _CierreSheetState extends State<_CierreSheet> {
           controller: _monto,
           autofocus: true,
           keyboardType: TextInputType.number,
+          inputFormatters: [ThousandsFormatter()],
           decoration: InputDecoration(
             labelText: 'Efectivo contado en caja',
             prefixText: '\$ ',

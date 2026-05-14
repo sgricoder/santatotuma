@@ -2,11 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum TipoMovimiento {
   ingresoCaja,
+  consignacionBancolombia,
   gasto,
   ajuste;
 
   String get etiqueta => switch (this) {
-        TipoMovimiento.ingresoCaja => 'Transferencia',
+        TipoMovimiento.ingresoCaja => 'Transferencia caja',
+        TipoMovimiento.consignacionBancolombia => 'Bancolombia',
         TipoMovimiento.gasto => 'Gasto',
         TipoMovimiento.ajuste => 'Ajuste',
       };

@@ -131,12 +131,12 @@ class _CajaAbierta extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Saldo esperado
-            _TarjetaSaldo(
+            Obx(() => _TarjetaSaldo(
               label: 'Saldo esperado en caja',
               valor: ctrl.saldoEsperado,
               color: AppColors.dorado,
               icono: Icons.account_balance_wallet_outlined,
-            ),
+            )),
           ],
         ),
 

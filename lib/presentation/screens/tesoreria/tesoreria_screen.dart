@@ -151,13 +151,20 @@ class _TesoreriaActiva extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _BotonAccion(
-                label: 'Registrar\nGasto',
-                icono: Icons.remove_circle_outline,
-                color: AppColors.tiempoCritico,
-                onTap: () => ctrl.abrirDialogoGasto(context),
+                label: 'Bancolombia',
+                icono: Icons.account_balance_wallet_outlined,
+                color: const Color(0xFF1E88E5),
+                onTap: () => ctrl.abrirDialogoConsignacion(context),
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 12),
+        _BotonAccion(
+          label: 'Registrar Gasto',
+          icono: Icons.remove_circle_outline,
+          color: AppColors.tiempoCritico,
+          onTap: () => ctrl.abrirDialogoGasto(context),
         ),
         const SizedBox(height: 20),
 
@@ -393,12 +400,15 @@ class _MovimientoTile extends StatelessWidget {
 
   Color get _color => switch (mov.tipo) {
         TipoMovimiento.ingresoCaja => AppColors.verdeOlivo,
+        TipoMovimiento.consignacionBancolombia => const Color(0xFF1E88E5),
         TipoMovimiento.gasto => AppColors.tiempoCritico,
         TipoMovimiento.ajuste => AppColors.dorado,
       };
 
   IconData get _icono => switch (mov.tipo) {
         TipoMovimiento.ingresoCaja => Icons.move_up_rounded,
+        TipoMovimiento.consignacionBancolombia =>
+          Icons.account_balance_wallet_outlined,
         TipoMovimiento.gasto => Icons.remove_circle_outline,
         TipoMovimiento.ajuste => Icons.tune_rounded,
       };
