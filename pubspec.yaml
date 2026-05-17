@@ -1,7 +1,7 @@
 name: satatotumapp
 description: "App de gestión para Santa Totuma - Totumas de patacón rellenas"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.8.1
@@ -48,10 +48,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/totuma.png
-    - assets/palitos.png
-    - assets/chps.png
-    - assets/platano.png
+    - assets/totuma.jpg
+    - assets/palitos.jpg
+    - assets/chps.jpg
+    - assets/platano.jpg
     - assets/cocacola1.png
     - assets/cocacola4.png
     - assets/posto1.png

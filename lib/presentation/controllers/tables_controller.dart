@@ -204,7 +204,7 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF783D19),
+                      color: AppColors.cafeOscuro,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -221,7 +221,7 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
               padding:
                   const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9EBC7),
+                color: AppColors.verdeClaro,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -229,14 +229,14 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
                 children: [
                   const Text(
                     'Total acumulado',
-                    style: TextStyle(fontSize: 15, color: Color(0xFFB99470)),
+                    style: TextStyle(fontSize: 15, color: AppColors.cafeMedio),
                   ),
                   Text(
                     CurrencyFormatter.format(widget.mesa.totalAcumulado),
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF783D19),
+                      color: AppColors.cafeOscuro,
                     ),
                   ),
                 ],
@@ -298,7 +298,7 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
             Row(
               children: [
                 const Icon(Icons.check_circle_outline,
-                    color: Color(0xFF9E9E9E), size: 20),
+                    color: AppColors.cafeMedio, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Mesa disponible',
@@ -338,7 +338,7 @@ class _SelectorMetodo extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w800,
-            color: Color(0xFFB99470),
+            color: AppColors.cafeMedio,
             letterSpacing: 0.8,
           ),
         ),
@@ -349,7 +349,7 @@ class _SelectorMetodo extends StatelessWidget {
               child: _BotonPago(
                 label: 'Efectivo',
                 icon: Icons.payments_outlined,
-                color: const Color(0xFFC4661F),
+                color: AppColors.verdeProfundo,
                 cargando: procesando,
                 onTap: onEfectivo,
               ),
@@ -359,7 +359,7 @@ class _SelectorMetodo extends StatelessWidget {
               child: _BotonPago(
                 label: 'Bancolombia',
                 icon: Icons.phone_android_outlined,
-                color: const Color(0xFFFFCC00),
+                color: AppColors.bancolombia,
                 cargando: procesando,
                 onTap: onBancolombia,
               ),
@@ -417,11 +417,11 @@ class _PanelEfectivo extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF9EBC7),
+                  color: AppColors.verdeClaro,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 16, color: Color(0xFFB99470)),
+                    size: 16, color: AppColors.verdeProfundo),
               ),
             ),
             const SizedBox(width: 12),
@@ -430,7 +430,7 @@ class _PanelEfectivo extends StatelessWidget {
               style: GoogleFonts.nunito(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF783D19),
+                color: AppColors.cafeOscuro,
               ),
             ),
           ],
@@ -454,13 +454,13 @@ class _PanelEfectivo extends StatelessWidget {
                         horizontal: 14, vertical: 9),
                     decoration: BoxDecoration(
                       color: seleccionado
-                          ? const Color(0xFFC4661F)
-                          : const Color(0xFFF9EBC7),
+                          ? AppColors.verdeProfundo
+                          : AppColors.superficie,
                       borderRadius: BorderRadius.circular(20),
                       border: seleccionado
                           ? null
                           : Border.all(
-                              color: const Color(0xFFD9C8A0), width: 1),
+                              color: AppColors.cafeMedio, width: 1),
                     ),
                     child: Text(
                       esExacto
@@ -471,7 +471,7 @@ class _PanelEfectivo extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         color: seleccionado
                             ? Colors.white
-                            : const Color(0xFF783D19),
+                            : AppColors.cafeOscuro,
                       ),
                     ),
                   ),
@@ -492,23 +492,23 @@ class _PanelEfectivo extends StatelessWidget {
           style: GoogleFonts.nunito(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: const Color(0xFF783D19),
+            color: AppColors.cafeOscuro,
           ),
           decoration: InputDecoration(
             prefixText: r'$ ',
             prefixStyle: GoogleFonts.nunito(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFFB99470),
+              color: AppColors.cafeMedio,
             ),
-            hintText: '0',
+            hintText: 'Monto recibido...',
             hintStyle: GoogleFonts.nunito(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFB99470),
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: AppColors.cafeMedio,
             ),
             filled: true,
-            fillColor: const Color(0xFFF9EBC7),
+            fillColor: AppColors.superficie,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
@@ -518,7 +518,7 @@ class _PanelEfectivo extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                  color: Color(0xFFA9B388), width: 1.5),
+                  color: AppColors.verdeProfundo, width: 1.5),
             ),
           ),
         ),
@@ -558,7 +558,7 @@ class _PanelEfectivo extends StatelessWidget {
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: suficiente
-                  ? const Color(0xFFC4661F)
+                  ? AppColors.verdeProfundo
                   : Colors.grey.shade300,
               foregroundColor:
                   suficiente ? Colors.white : Colors.grey.shade500,
@@ -601,8 +601,8 @@ class _VueltoDisplay extends StatelessWidget {
     IconData icono;
 
     if (sinIngresar) {
-      bgColor = const Color(0xFFF9EBC7);
-      textColor = const Color(0xFFB99470);
+      bgColor = AppColors.verdeClaro;
+      textColor = AppColors.cafeMedio;
       label = 'Vuelto';
       valor = '—';
       icono = Icons.swap_horiz_rounded;

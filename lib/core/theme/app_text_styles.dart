@@ -61,13 +61,13 @@ abstract final class AppTextStyles {
   static TextStyle precio = GoogleFonts.nunito(
     fontSize: 18,
     fontWeight: FontWeight.w700,
-    color: AppColors.verdeOlivo,
+    color: AppColors.verdeOscuro,  // 5:1 sobre blanco ✅
   );
 
   static TextStyle precioGrande = GoogleFonts.nunito(
     fontSize: 28,
     fontWeight: FontWeight.w800,
-    color: AppColors.verdeOlivo,
+    color: AppColors.verdeOscuro,
   );
 
   static TextStyle boton = GoogleFonts.nunito(

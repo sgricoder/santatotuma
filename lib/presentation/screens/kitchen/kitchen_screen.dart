@@ -62,6 +62,50 @@ class _OrderCard extends StatelessWidget {
 
   const _OrderCard({required this.pedido, required this.ctrl});
 
+  void _confirmarCancelar(
+      BuildContext context, KitchenController ctrl, OrderModel pedido) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Cancelar pedido',
+          style: GoogleFonts.cormorantGaramond(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.cafeOscuro,
+          ),
+        ),
+        content: Text(
+          '¿Cancelar la orden #${pedido.numeroOrden.toString().padLeft(3, '0')}? Esta acción no se puede deshacer.',
+          style: GoogleFonts.nunito(fontSize: 14, color: AppColors.cafeMedio),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: Text(
+              'No, mantener',
+              style: GoogleFonts.nunito(color: AppColors.cafeMedio),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ctrl.cancelarPedido(pedido);
+            },
+            child: Text(
+              'Sí, cancelar',
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w700,
+                color: AppColors.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -168,6 +212,27 @@ class _OrderCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: isDespachando
+                              ? null
+                              : () => _confirmarCancelar(context, ctrl, pedido),
+                          icon: const Icon(Icons.cancel_outlined, size: 16),
+                          label: Text(
+                            'Cancelar pedido',
+                            style: GoogleFonts.nunito(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                            minimumSize: const Size.fromHeight(36),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -208,8 +273,42 @@ class _OrderHeader extends StatelessWidget {
             height: 1,
           ),
         ),
-        if (pedido.mesa != null) ...[
+        if (pedido.nombreCliente.isNotEmpty) ...[
           const SizedBox(width: 10),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.verdeOlivo.withAlpha(18),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.person_outline_rounded,
+                    size: 13,
+                    color: AppColors.verdeOlivo,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      pedido.nombreCliente,
+                      style: GoogleFonts.nunito(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.verdeOlivo,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+        if (pedido.mesa != null) ...[
+          const SizedBox(width: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(

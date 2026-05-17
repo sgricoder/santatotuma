@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/inventory_model.dart';
 import '../../data/repositories/inventory_repository.dart';
@@ -148,14 +149,14 @@ class _BajoStockSheet extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.warning_amber_rounded,
-                  color: Color(0xFFC4661F), size: 22),
+                  color: AppColors.naranja, size: 22),
               const SizedBox(width: 10),
               Text(
                 '${items.length} insumo${items.length == 1 ? '' : 's'} bajo stock',
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1C1408),
+                  color: AppColors.cafeNegro,
                 ),
               ),
             ],
@@ -179,13 +180,13 @@ class _BajoStockSheet extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
-                      color: Color(0xFF1C1408),
+                      color: AppColors.cafeNegro,
                     ),
                   ),
                   subtitle: Text(
                     'Stock mín: ${item.stockMinimo} ${item.unidad}',
                     style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF9E8060)),
+                        fontSize: 12, color: AppColors.cafeClaro),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -195,7 +196,7 @@ class _BajoStockSheet extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFFC4661F),
+                          color: AppColors.naranja,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -208,7 +209,7 @@ class _BajoStockSheet extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2D4A1E),
+                            color: AppColors.verdeProfundo,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
@@ -352,7 +353,7 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF783D19),
+                          color: AppColors.cafeOscuro,
                         ),
                       ),
                       Text(
@@ -360,8 +361,8 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
                         style: TextStyle(
                           fontSize: 13,
                           color: insumo.esBajoStock
-                              ? const Color(0xFFC4661F)
-                              : const Color(0xFFB99470),
+                              ? AppColors.naranja
+                              : AppColors.cafeMedio,
                           fontWeight: insumo.esBajoStock
                               ? FontWeight.w700
                               : FontWeight.normal,
@@ -375,15 +376,15 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF0E8),
+                      color: AppColors.cremaAlerta,
                       borderRadius: BorderRadius.circular(8),
                       border:
-                          Border.all(color: const Color(0xFFC4661F), width: 1),
+                          Border.all(color: AppColors.naranja, width: 1),
                     ),
                     child: const Text(
                       'Stock bajo',
                       style: TextStyle(
-                        color: Color(0xFFC4661F),
+                        color: AppColors.naranja,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -396,19 +397,19 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
             // Tabs
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF9EBC7),
+                color: AppColors.verdeClaro,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TabBar(
                 controller: _tab,
                 indicator: BoxDecoration(
-                  color: const Color(0xFFC4661F),
+                  color: AppColors.verdeProfundo,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerHeight: 0,
                 labelColor: Colors.white,
-                unselectedLabelColor: const Color(0xFFB99470),
+                unselectedLabelColor: AppColors.cafeMedio,
                 labelStyle: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 14),
                 tabs: const [

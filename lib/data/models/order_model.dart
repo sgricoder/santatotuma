@@ -88,6 +88,7 @@ class OrderModel {
   final EstadoPedido estado;
   final int? mesa;
   final String observaciones;
+  final String nombreCliente;
   final DateTime fechaCreacion;
   final DateTime fechaActualizacion;
   final MetodoPago? metodoPago;
@@ -102,6 +103,7 @@ class OrderModel {
     required this.fechaActualizacion,
     this.mesa,
     this.observaciones = '',
+    this.nombreCliente = '',
     this.metodoPago,
   });
 
@@ -119,6 +121,7 @@ class OrderModel {
       estado: EstadoPedido.fromString(d['estado'] as String),
       mesa: d['mesa'] != null ? (d['mesa'] as num).toInt() : null,
       observaciones: d['observaciones'] as String? ?? '',
+      nombreCliente: d['nombreCliente'] as String? ?? '',
       fechaCreacion:
           (d['fechaCreacion'] as Timestamp?)?.toDate() ?? DateTime.now(),
       fechaActualizacion:
@@ -136,6 +139,7 @@ class OrderModel {
         'estado': estado.name,
         'mesa': mesa,
         'observaciones': observaciones,
+        'nombreCliente': nombreCliente,
         'fechaCreacion': Timestamp.fromDate(fechaCreacion),
         'fechaActualizacion': Timestamp.fromDate(fechaActualizacion),
         'metodoPago': metodoPago?.name,
@@ -154,6 +158,7 @@ class OrderModel {
         estado: estado ?? this.estado,
         mesa: mesa,
         observaciones: observaciones,
+        nombreCliente: nombreCliente,
         fechaCreacion: fechaCreacion,
         fechaActualizacion: fechaActualizacion ?? this.fechaActualizacion,
         metodoPago: metodoPago ?? this.metodoPago,

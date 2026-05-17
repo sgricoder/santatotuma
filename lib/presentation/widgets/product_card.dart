@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../data/models/product_model.dart';
 import '../controllers/cart_controller.dart';
+import '../controllers/configuracion_controller.dart';
 
 class ProductCard extends StatefulWidget {
   final ProductModel producto;
@@ -30,9 +31,10 @@ class _ProductCardState extends State<ProductCard>
       vsync: this,
       duration: const Duration(milliseconds: 110),
     );
-    _escala = Tween<double>(begin: 1.0, end: 0.92).animate(
-      CurvedAnimation(parent: _anim, curve: Curves.easeInOut),
-    );
+    _escala = Tween<double>(
+      begin: 1.0,
+      end: 0.92,
+    ).animate(CurvedAnimation(parent: _anim, curve: Curves.easeInOut));
   }
 
   @override
@@ -133,7 +135,9 @@ class _ProductCardState extends State<ProductCard>
                         duration: const Duration(milliseconds: 200),
                         constraints: const BoxConstraints(minWidth: 30),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 9, vertical: 5),
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.dorado,
                           borderRadius: BorderRadius.circular(15),
@@ -181,7 +185,7 @@ class _ProductCardState extends State<ProductCard>
                                     height: 1.2,
                                     shadows: const [
                                       Shadow(
-                                        color: Color(0x55000000),
+                                        color: AppColors.overlayClaro,
                                         blurRadius: 6,
                                       ),
                                     ],
@@ -192,14 +196,15 @@ class _ProductCardState extends State<ProductCard>
                                 const SizedBox(height: 5),
                                 Text(
                                   CurrencyFormatter.format(
-                                      widget.producto.precio),
+                                    widget.producto.precio,
+                                  ),
                                   style: GoogleFonts.nunito(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.cremaOscura,
                                     shadows: const [
                                       Shadow(
-                                        color: Color(0x66000000),
+                                        color: AppColors.overlayMedio,
                                         blurRadius: 4,
                                       ),
                                     ],
@@ -277,18 +282,18 @@ class _Imagen extends StatelessWidget {
   const _Imagen({required this.producto});
 
   static const Map<String, String> _assets = {
-    'candilejas':       'assets/totuma.png',
-    'castanuelas':      'assets/totuma.png',
-    'makondo':          'assets/totuma.png',
-    'palitos_queso_x5': 'assets/palitos.png',
-    'palo_queso':       'assets/palitos.png',
-    'chips_platano':    'assets/chps.png',
-    'aborrajado':       'assets/platano.png',
-    'coca_cola_1500':   'assets/cocacola1.png',
-    'coca_cola_400':    'assets/cocacola4.png',
-    'postobon_1500':    'assets/posto1.png',
-    'postobon_400':     'assets/postobon4.png',
-    'agua_cristal':     'assets/aguaCristal.png',
+    'candilejas': 'assets/totuma.jpg',
+    'castanuelas': 'assets/totuma.jpg',
+    'makondo': 'assets/totuma.jpg',
+    'palitos_queso_x5': 'assets/palitos.jpg',
+    'palo_queso': 'assets/palitos.jpg',
+    'chips_platano': 'assets/chps.jpg',
+    'aborrajado': 'assets/platano.jpg',
+    'coca_cola_1500': 'assets/cocacola1.png',
+    'coca_cola_400': 'assets/cocacola4.png',
+    'postobon_1500': 'assets/posto1.png',
+    'postobon_400': 'assets/postobon4.png',
+    'agua_cristal': 'assets/aguaCristal.png',
   };
 
   @override
@@ -323,25 +328,16 @@ class _Placeholder extends StatelessWidget {
   const _Placeholder({required this.categoria});
 
   static IconData _icono(CategoriaProducto cat) => switch (cat) {
-        CategoriaProducto.totumas => Icons.lunch_dining,
-        CategoriaProducto.entradas => Icons.tapas,
-        CategoriaProducto.bebidas => Icons.local_drink,
-      };
+    CategoriaProducto.totumas => Icons.lunch_dining,
+    CategoriaProducto.entradas => Icons.tapas,
+    CategoriaProducto.bebidas => Icons.local_drink,
+  };
 
   static List<Color> _gradiente(CategoriaProducto cat) => switch (cat) {
-        CategoriaProducto.totumas => [
-            AppColors.verdeOlivo,
-            AppColors.verdeOscuro,
-          ],
-        CategoriaProducto.entradas => [
-            AppColors.cafeClaro,
-            AppColors.cafeOscuro,
-          ],
-        CategoriaProducto.bebidas => [
-            const Color(0xFF1B4F72),
-            const Color(0xFF0D2137),
-          ],
-      };
+    CategoriaProducto.totumas => [AppColors.verdeOlivo, AppColors.verdeOscuro],
+    CategoriaProducto.entradas => [AppColors.cafeClaro, AppColors.cafeOscuro],
+    CategoriaProducto.bebidas => [AppColors.azulBebida, AppColors.azulBebidaOscuro],
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -390,6 +386,8 @@ class _SelectorSalsasState extends State<_SelectorSalsas> {
 
   @override
   Widget build(BuildContext context) {
+    final salsasDisponibles =
+        Get.find<ConfiguracionController>().salsas.toList();
     final lleno = _seleccionadas.length >= AppSalsas.maxPorTotuma;
 
     return Container(
@@ -439,8 +437,7 @@ class _SelectorSalsasState extends State<_SelectorSalsas> {
               const Spacer(),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   color: lleno
                       ? AppColors.dorado.withAlpha(20)
@@ -459,10 +456,9 @@ class _SelectorSalsasState extends State<_SelectorSalsas> {
             ],
           ),
           const SizedBox(height: 16),
-          ...AppSalsas.disponibles.map((salsa) {
+          ...salsasDisponibles.map((salsa) {
             final seleccionada = _seleccionadas.contains(salsa);
             final desactivada = lleno && !seleccionada;
-
             return Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: AnimatedContainer(
@@ -559,3 +555,4 @@ class _SelectorSalsasState extends State<_SelectorSalsas> {
     );
   }
 }
+

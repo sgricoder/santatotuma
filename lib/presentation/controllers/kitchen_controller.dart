@@ -10,6 +10,7 @@ import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/order_model.dart';
 import '../../data/repositories/order_repository.dart';
+import '../../data/repositories/table_repository.dart';
 
 class KitchenController extends GetxController {
   OrderRepository get _repo => Get.find<OrderRepository>();
@@ -87,6 +88,34 @@ class KitchenController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
       despachando.remove(id);
+    }
+  }
+
+  Future<void> cancelarPedido(OrderModel pedido) async {
+    if (despachando.contains(pedido.id)) return;
+    despachando.add(pedido.id);
+    try {
+      await _repo.cambiarEstado(pedido.id, EstadoPedido.cancelado);
+      if (pedido.mesa != null) {
+        await Get.find<TableRepository>()
+            .quitarPedido(pedido.mesa!, pedido.id, pedido.total);
+      }
+      HapticFeedback.heavyImpact();
+      Get.snackbar(
+        'Pedido cancelado',
+        'Orden #${pedido.numeroOrden.toString().padLeft(3, '0')} cancelada',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(12),
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Error',
+        'No se pudo cancelar el pedido',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      despachando.remove(pedido.id);
     }
   }
 
@@ -229,7 +258,7 @@ class _CobroSinMesaSheetState extends State<_CobroSinMesaSheet> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9EBC7),
+              color: AppColors.verdeClaro,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -245,7 +274,7 @@ class _CobroSinMesaSheetState extends State<_CobroSinMesaSheet> {
                   style: GoogleFonts.nunito(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF783D19),
+                    color: AppColors.cafeOscuro,
                   ),
                 ),
               ],
@@ -349,7 +378,7 @@ class _KSelectorMetodo extends StatelessWidget {
               child: _BotonMetodo(
                 label: 'Bancolombia',
                 icon: Icons.phone_android_outlined,
-                color: const Color(0xFFB8860B),
+                color: AppColors.doradoOscuro,
                 procesando: procesando,
                 onTap: onBancolombia,
               ),
@@ -407,11 +436,11 @@ class _KPanelEfectivo extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF9EBC7),
+                  color: AppColors.verdeClaro,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 16, color: Color(0xFFB99470)),
+                    size: 16, color: AppColors.verdeProfundo),
               ),
             ),
             const SizedBox(width: 12),
@@ -420,7 +449,7 @@ class _KPanelEfectivo extends StatelessWidget {
               style: GoogleFonts.nunito(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF783D19),
+                color: AppColors.cafeOscuro,
               ),
             ),
           ],
@@ -444,13 +473,13 @@ class _KPanelEfectivo extends StatelessWidget {
                         horizontal: 14, vertical: 9),
                     decoration: BoxDecoration(
                       color: seleccionado
-                          ? const Color(0xFFC4661F)
-                          : const Color(0xFFF9EBC7),
+                          ? AppColors.verdeProfundo
+                          : AppColors.superficie,
                       borderRadius: BorderRadius.circular(20),
                       border: seleccionado
                           ? null
                           : Border.all(
-                              color: const Color(0xFFD9C8A0), width: 1),
+                              color: AppColors.cafeMedio, width: 1),
                     ),
                     child: Text(
                       esExacto
@@ -461,7 +490,7 @@ class _KPanelEfectivo extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         color: seleccionado
                             ? Colors.white
-                            : const Color(0xFF783D19),
+                            : AppColors.cafeOscuro,
                       ),
                     ),
                   ),
@@ -482,23 +511,23 @@ class _KPanelEfectivo extends StatelessWidget {
           style: GoogleFonts.nunito(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: const Color(0xFF783D19),
+            color: AppColors.cafeOscuro,
           ),
           decoration: InputDecoration(
             prefixText: r'$ ',
             prefixStyle: GoogleFonts.nunito(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFFB99470),
+              color: AppColors.cafeMedio,
             ),
-            hintText: '0',
+            hintText: 'Monto recibido...',
             hintStyle: GoogleFonts.nunito(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFB99470),
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: AppColors.cafeMedio,
             ),
             filled: true,
-            fillColor: const Color(0xFFF9EBC7),
+            fillColor: AppColors.superficie,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
@@ -508,7 +537,7 @@ class _KPanelEfectivo extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  const BorderSide(color: Color(0xFFA9B388), width: 1.5),
+                  const BorderSide(color: AppColors.verdeProfundo, width: 1.5),
             ),
           ),
         ),
@@ -546,7 +575,7 @@ class _KPanelEfectivo extends StatelessWidget {
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  suficiente ? const Color(0xFFC4661F) : Colors.grey.shade300,
+                  suficiente ? AppColors.verdeProfundo : Colors.grey.shade300,
               foregroundColor:
                   suficiente ? Colors.white : Colors.grey.shade500,
               shape: RoundedRectangleBorder(
@@ -588,8 +617,8 @@ class _KVueltoDisplay extends StatelessWidget {
     IconData icono;
 
     if (sinIngresar) {
-      bgColor = const Color(0xFFF9EBC7);
-      textColor = const Color(0xFFB99470);
+      bgColor = AppColors.verdeClaro;
+      textColor = AppColors.cafeMedio;
       label = 'Vuelto';
       valor = '—';
       icono = Icons.swap_horiz_rounded;

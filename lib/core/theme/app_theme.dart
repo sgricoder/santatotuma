@@ -9,20 +9,20 @@ final class AppTheme {
       useMaterial3: true,
       colorScheme: ColorScheme(
         brightness: Brightness.light,
-        primary: AppColors.verdeOlivo,
-        onPrimary: AppColors.crema,
-        primaryContainer: AppColors.verdeOscuro,
+        primary: AppColors.verdeProfundo,
+        onPrimary: Colors.white,
+        primaryContainer: AppColors.verdeMuyOscuro,
         onPrimaryContainer: AppColors.crema,
-        secondary: AppColors.dorado,
-        onSecondary: AppColors.cafeOscuro,
-        secondaryContainer: AppColors.doradoClaro,
-        onSecondaryContainer: AppColors.cafeOscuro,
+        secondary: AppColors.naranja,
+        onSecondary: Colors.white,
+        secondaryContainer: AppColors.naranjaOscuro,
+        onSecondaryContainer: AppColors.crema,
         surface: AppColors.superficie,
         onSurface: AppColors.cafeOscuro,
         surfaceContainerHighest: AppColors.cremaOscura,
         error: AppColors.error,
         onError: Colors.white,
-        outline: AppColors.cremaOscura,
+        outline: AppColors.cafeMedio,
       ),
       scaffoldBackgroundColor: AppColors.fondo,
       textTheme: GoogleFonts.nunitoTextTheme().copyWith(
@@ -55,7 +55,7 @@ final class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.verdeOlivo,
+        backgroundColor: AppColors.verdeProfundo,
         foregroundColor: AppColors.crema,
         elevation: 0,
         centerTitle: false,
@@ -69,30 +69,35 @@ final class AppTheme {
         actionsIconTheme: const IconThemeData(color: AppColors.crema),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.cafeOscuro,
-        indicatorColor: AppColors.crema,
+        backgroundColor: Colors.white,
+        indicatorColor: AppColors.verdeProfundo,
+        elevation: 16,
+        shadowColor: AppColors.verdeProfundo,
+        surfaceTintColor: Colors.transparent,
         height: 65,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: AppColors.cafeOscuro, size: 24);
+            return const IconThemeData(color: Colors.white, size: 24);
           }
-          return const IconThemeData(color: AppColors.cafeMedio, size: 24);
+          return const IconThemeData(color: AppColors.grisNeutro, size: 24);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return GoogleFonts.nunito(
-              fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.crema,
+              fontSize: 11, fontWeight: FontWeight.w700,
+              color: AppColors.verdeProfundo,
             );
           }
           return GoogleFonts.nunito(
-            fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.cafeMedio,
+            fontSize: 11, fontWeight: FontWeight.w500,
+            color: AppColors.grisNeutro,
           );
         }),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.dorado,
+          backgroundColor: AppColors.naranja,
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.cremaOscura,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -124,8 +129,8 @@ final class AppTheme {
         margin: EdgeInsets.zero,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.verdeOlivo,
-        foregroundColor: AppColors.crema,
+        backgroundColor: AppColors.dorado,
+        foregroundColor: Colors.white,
         elevation: 4,
         shape: CircleBorder(),
       ),
@@ -143,11 +148,11 @@ final class AppTheme {
         fillColor: AppColors.superficie,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.cremaOscura),
+          borderSide: const BorderSide(color: AppColors.cafeClaro),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.cremaOscura),
+          borderSide: const BorderSide(color: AppColors.cafeClaro),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -156,6 +161,7 @@ final class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         hintStyle: GoogleFonts.nunito(color: AppColors.textoSecundario),
         labelStyle: GoogleFonts.nunito(color: AppColors.textoSecundario),
+        prefixIconColor: AppColors.textoSecundario,
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.cafeOscuro,
@@ -165,7 +171,7 @@ final class AppTheme {
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       dividerTheme: const DividerThemeData(
-        color: AppColors.cremaOscura,
+        color: AppColors.cafeMedio,
         thickness: 1,
         space: 1,
       ),

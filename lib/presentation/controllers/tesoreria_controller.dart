@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/thousands_formatter.dart';
+import '../../data/models/cash_register_model.dart';
 import '../../data/models/order_model.dart';
 import '../../data/models/tesoreria_model.dart';
 import '../../data/repositories/cash_register_repository.dart';
@@ -206,6 +207,11 @@ class TesoreriaController extends GetxController {
     try {
       final caja = await _cajaRepo.getCajaFecha(DateTime.now());
       if (caja == null) return null;
+      // Caja cerrada: usar el monto físicamente contado al cierre
+      if (caja.estado == EstadoCaja.cerrada && caja.cierreMonto != null) {
+        return caja.cierreMonto;
+      }
+      // Caja abierta: calcular saldo esperado en tiempo real
       final hoy = DateTime.now();
       final pedidos = await _orderRepo.getPorFecha(
         DateTime(hoy.year, hoy.month, hoy.day),
@@ -213,7 +219,7 @@ class TesoreriaController extends GetxController {
       );
       final ventasEfectivo = pedidos
           .where((p) => p.metodoPago == MetodoPago.efectivo)
-          .fold(0.0, (s, p) => s + p.total);
+          .fold<double>(0.0, (s, p) => s + p.total);
       return caja.aperturaMonto + ventasEfectivo - caja.totalSalidas;
     } catch (_) {
       return null;
@@ -462,7 +468,7 @@ class _ConsignacionBancolombiaSheetState
       titulo: 'Consignación Bancolombia',
       subtitulo: 'Registra pagos digitales recibidos hoy',
       icono: Icons.account_balance_wallet_outlined,
-      colorIcono: const Color(0xFF1E88E5),
+      colorIcono: AppColors.azulTransferencia,
       children: [
         if (_cargando)
           const Center(child: CircularProgressIndicator())
@@ -470,10 +476,10 @@ class _ConsignacionBancolombiaSheetState
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E88E5).withAlpha(15),
+              color: AppColors.azulTransferencia.withAlpha(15),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF1E88E5).withAlpha(60),
+                color: AppColors.azulTransferencia.withAlpha(60),
               ),
             ),
             child: Row(
@@ -488,7 +494,7 @@ class _ConsignacionBancolombiaSheetState
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1E88E5),
+                    color: AppColors.azulTransferencia,
                   ),
                 ),
               ],
@@ -511,7 +517,7 @@ class _ConsignacionBancolombiaSheetState
         const SizedBox(height: 24),
         _BotonConfirmar(
           label: 'Registrar consignación',
-          color: const Color(0xFF1E88E5),
+          color: AppColors.azulTransferencia,
           onTap: _confirmar,
         ),
       ],

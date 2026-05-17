@@ -69,7 +69,7 @@ class _PremiumHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFC4661F), Color(0xFF783D19)],
+          colors: [AppColors.verdeProfundo, AppColors.verdeMuyOscuro],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -267,7 +267,7 @@ class _BarraCarrito extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFC4661F), Color(0xFF783D19)],
+              colors: [AppColors.verdeProfundo, AppColors.verdeMuyOscuro],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -278,7 +278,7 @@ class _BarraCarrito extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFC4661F).withAlpha(110),
+                color: AppColors.verdeProfundo.withAlpha(110),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),

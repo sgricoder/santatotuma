@@ -90,7 +90,7 @@ class _PinSheetState extends State<PinSheet>
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFC4661F), Color(0xFF783D19)],
+          colors: [AppColors.verdeProfundo, AppColors.verdeMuyOscuro],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -124,13 +124,13 @@ class _PinSheetState extends State<PinSheet>
               color: Colors.white.withAlpha(15),
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.dorado.withAlpha(100),
+                color: AppColors.verde.withAlpha(160),
                 width: 1.5,
               ),
             ),
             child: Icon(
               Icons.lock_outline_rounded,
-              color: AppColors.doradoClaro,
+              color: AppColors.verde,
               size: 26,
             ),
           ),
@@ -184,14 +184,14 @@ class _PinSheetState extends State<PinSheet>
                       color: _error
                           ? AppColors.tiempoCritico
                           : lleno
-                              ? AppColors.doradoClaro
+                              ? AppColors.verde
                               : Colors.transparent,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: _error
                             ? AppColors.tiempoCritico
                             : lleno
-                                ? AppColors.doradoClaro
+                                ? AppColors.verde
                                 : Colors.white.withAlpha(80),
                         width: 2,
                       ),

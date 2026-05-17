@@ -15,6 +15,7 @@ class CartController extends GetxController {
   final items = <OrderItemModel>[].obs;
   final mesa = Rx<int?>(null);
   final notas = ''.obs;
+  final nombreCliente = ''.obs;
   final enviando = false.obs;
 
   double get total => items.fold(0.0, (s, e) => s + e.subtotal);
@@ -66,6 +67,7 @@ class CartController extends GetxController {
     items.clear();
     mesa.value = null;
     notas.value = '';
+    nombreCliente.value = '';
   }
 
   Future<void> confirmar() async {
@@ -80,6 +82,7 @@ class CartController extends GetxController {
         estado: EstadoPedido.cocina,
         mesa: mesa.value,
         observaciones: notas.value.trim(),
+        nombreCliente: nombreCliente.value.trim(),
         fechaCreacion: DateTime.now(),
         fechaActualizacion: DateTime.now(),
       );

@@ -153,7 +153,7 @@ class _TesoreriaActiva extends StatelessWidget {
               child: _BotonAccion(
                 label: 'Bancolombia',
                 icono: Icons.account_balance_wallet_outlined,
-                color: const Color(0xFF1E88E5),
+                color: AppColors.azulTransferencia,
                 onTap: () => ctrl.abrirDialogoConsignacion(context),
               ),
             ),
@@ -202,14 +202,14 @@ class _HeaderSaldo extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFC4661F), Color(0xFF783D19)],
+          colors: [AppColors.verdeProfundo, AppColors.verdeMuyOscuro],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFC4661F).withAlpha(80),
+            color: AppColors.verdeProfundo.withAlpha(80),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -400,7 +400,7 @@ class _MovimientoTile extends StatelessWidget {
 
   Color get _color => switch (mov.tipo) {
         TipoMovimiento.ingresoCaja => AppColors.verdeOlivo,
-        TipoMovimiento.consignacionBancolombia => const Color(0xFF1E88E5),
+        TipoMovimiento.consignacionBancolombia => AppColors.azulTransferencia,
         TipoMovimiento.gasto => AppColors.tiempoCritico,
         TipoMovimiento.ajuste => AppColors.dorado,
       };

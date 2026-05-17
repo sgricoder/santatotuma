@@ -12,6 +12,7 @@ import 'data/seeds/inventory_seed.dart';
 import 'data/seeds/products_seed.dart';
 import 'firebase_options.dart';
 import 'presentation/screens/cash/cash_screen.dart';
+import 'presentation/screens/configuracion/configuracion_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
 import 'presentation/screens/inventory/inventory_screen.dart';
 import 'presentation/screens/orders/cart_screen.dart';
@@ -98,6 +99,10 @@ class SantaTotomaApp extends StatelessWidget {
         GetPage(
           name: AppRoutes.tesoreria,
           page: () => const TesoreriaScreen(),
+        ),
+        GetPage(
+          name: AppRoutes.configuracion,
+          page: () => const ConfiguracionScreen(),
         ),
       ],
     );

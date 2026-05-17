@@ -217,7 +217,7 @@ class _SeccionVentas extends StatelessWidget {
                 _FilaResumen(
                   label: 'Ventas Bancolombia',
                   valor: CurrencyFormatter.format(ctrl.ventasBancolombia.value),
-                  color: const Color(0xFFB8860B),
+                  color: AppColors.doradoOscuro,
                 ),
               ],
             ),
@@ -358,14 +358,14 @@ class _CajaCerrada extends StatelessWidget {
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFC4661F), Color(0xFF783D19)],
+              colors: [AppColors.verdeProfundo, AppColors.verdeMuyOscuro],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFC4661F).withAlpha(80),
+                color: AppColors.verdeProfundo.withAlpha(80),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),

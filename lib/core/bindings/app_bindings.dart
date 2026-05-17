@@ -14,6 +14,7 @@ import '../../presentation/controllers/cash_controller.dart';
 import '../../presentation/controllers/inventory_controller.dart';
 import '../../data/repositories/tesoreria_repository.dart';
 import '../../presentation/controllers/admin_controller.dart';
+import '../../presentation/controllers/configuracion_controller.dart';
 import '../../presentation/controllers/sales_controller.dart';
 import '../../presentation/controllers/tables_controller.dart';
 import '../../presentation/controllers/tesoreria_controller.dart';
@@ -34,6 +35,7 @@ class AppBindings extends Bindings {
     Get.put(HomeController(), permanent: true);
     Get.put(CartController(), permanent: true);
     Get.put(AdminController(), permanent: true);
+    Get.put(ConfiguracionController(), permanent: true);
 
     // Controladores de módulo (se inicializan al primer uso)
     Get.lazyPut(() => OrdersController(), fenix: true);

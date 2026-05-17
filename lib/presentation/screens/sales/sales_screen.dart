@@ -399,7 +399,7 @@ class _DesglosePago extends StatelessWidget {
                   ),
                   Flexible(
                     flex: ((1 - pctEfectivo) * 100).round(),
-                    child: Container(color: const Color(0xFF6A0DAD)),
+                    child: Container(color: AppColors.azulTransferencia),
                   ),
                 ],
               ),
@@ -419,7 +419,7 @@ class _DesglosePago extends StatelessWidget {
                 label: 'Bancolombia',
                 valor: CurrencyFormatter.format(bancolombia),
                 porcentaje: 1 - pctEfectivo,
-                color: const Color(0xFFFFCC00),
+                color: AppColors.bancolombia,
               ),
             ],
           ),

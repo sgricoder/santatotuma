@@ -54,6 +54,24 @@ class TableRepository {
         .timeout(const Duration(milliseconds: 800), onTimeout: () {});
   }
 
+  Future<void> quitarPedido(
+    int mesa,
+    String ordenId,
+    double montoOrden,
+  ) async {
+    final ref = _col.doc(mesa.toString());
+    await ref
+        .update({
+          'ordenesActivas': FieldValue.arrayRemove([ordenId]),
+          'totalAcumulado': FieldValue.increment(-montoOrden),
+        })
+        .timeout(const Duration(milliseconds: 800), onTimeout: () {});
+    // Si ya no quedan órdenes activas, liberar la mesa
+    final snap = await ref.get();
+    final ordenes = snap.data()?['ordenesActivas'] as List? ?? [];
+    if (ordenes.isEmpty) await cerrar(mesa);
+  }
+
   Future<void> marcarPendienteCobro(int mesa) async {
     await _col
         .doc(mesa.toString())

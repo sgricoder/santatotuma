@@ -130,10 +130,12 @@ class _PanelInferior extends StatefulWidget {
 }
 
 class _PanelInferiorState extends State<_PanelInferior> {
+  final _nombreCtrl = TextEditingController();
   final _notasCtrl = TextEditingController();
 
   @override
   void dispose() {
+    _nombreCtrl.dispose();
     _notasCtrl.dispose();
     super.dispose();
   }
@@ -170,6 +172,20 @@ class _PanelInferiorState extends State<_PanelInferior> {
               ),
             ),
           ),
+
+          // Nombre del cliente
+          TextField(
+            controller: _nombreCtrl,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              hintText: 'A nombre de...',
+              prefixIcon: Icon(Icons.person_outline_rounded),
+            ),
+            maxLines: 1,
+            textInputAction: TextInputAction.next,
+            onChanged: (v) => ctrl.nombreCliente.value = v,
+          ),
+          const SizedBox(height: 14),
 
           // Mesa
           Row(
@@ -233,28 +249,33 @@ class _PanelInferiorState extends State<_PanelInferior> {
 
           // Botón enviar a cocina
           Obx(
-            () => ElevatedButton.icon(
-              onPressed: ctrl.enviando.value ? null : ctrl.confirmar,
-              icon: ctrl.enviando.value
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.crema,
-                      ),
-                    )
-                  : const Icon(Icons.whatshot_rounded),
-              label: Text(
-                ctrl.enviando.value ? 'Enviando...' : 'Enviar a cocina',
-              ),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            () {
+              final sinNombre = ctrl.nombreCliente.value.trim().isEmpty;
+              return ElevatedButton.icon(
+                onPressed: ctrl.enviando.value || sinNombre
+                    ? null
+                    : ctrl.confirmar,
+                icon: ctrl.enviando.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.crema,
+                        ),
+                      )
+                    : const Icon(Icons.whatshot_rounded),
+                label: Text(
+                  ctrl.enviando.value ? 'Enviando...' : 'Enviar a cocina',
                 ),
-              ),
-            ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -395,14 +416,14 @@ class _MesaChip extends StatelessWidget {
       EstadoMesa.ocupada => AppColors.mesaOcupada,
       EstadoMesa.pendienteCobro => AppColors.mesaPendiente,
       EstadoMesa.pagada => AppColors.mesaPagada,
-      _ => AppColors.cremaOscura,
+      _ => AppColors.cafeClaro,
     };
   }
 
   Color get _textColor {
     if (activo) return AppColors.crema;
     return switch (estado) {
-      EstadoMesa.ocupada => const Color(0xFFB8860B),
+      EstadoMesa.ocupada => AppColors.doradoOscuro,
       EstadoMesa.pendienteCobro => AppColors.mesaPendiente,
       EstadoMesa.pagada => AppColors.mesaPagada,
       _ => AppColors.cafeOscuro,
