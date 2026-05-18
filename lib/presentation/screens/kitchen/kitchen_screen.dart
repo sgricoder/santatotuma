@@ -172,8 +172,9 @@ class _OrderCard extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: isDespachando
                               ? null
-                              : pedido.mesa != null
-                                  ? () => ctrl.marcarDespachado(pedido.id)
+                              : (pedido.metodoPago != null ||
+                                      pedido.mesa != null)
+                                  ? () => ctrl.marcarDespachado(pedido)
                                   : () => ctrl.mostrarCobroSinMesa(
                                         context, pedido),
                           icon: isDespachando
@@ -185,18 +186,15 @@ class _OrderCard extends StatelessWidget {
                                     color: AppColors.crema,
                                   ),
                                 )
-                              : Icon(
-                                  pedido.mesa != null
-                                      ? Icons.whatshot_rounded
-                                      : Icons.payments_outlined,
-                                  size: 22,
-                                ),
+                              : const Icon(Icons.whatshot_rounded, size: 22),
                           label: Text(
                             isDespachando
                                 ? 'Procesando...'
-                                : pedido.mesa != null
-                                    ? 'Listo — Despachar'
-                                    : 'Listo — Cobrar',
+                                : pedido.metodoPago != null
+                                    ? 'Listo — Despachar ✓'
+                                    : pedido.mesa != null
+                                        ? 'Listo — Despachar'
+                                        : 'Listo — Cobrar',
                             style: GoogleFonts.nunito(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -260,87 +258,106 @@ class _OrderHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Número de orden — protagonista visual
-        Text(
-          '#${pedido.numeroOrden.toString().padLeft(3, '0')}',
-          style: GoogleFonts.cormorantGaramond(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: AppColors.cafeOscuro,
-            height: 1,
-          ),
-        ),
-        if (pedido.nombreCliente.isNotEmpty) ...[
-          const SizedBox(width: 10),
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.verdeOlivo.withAlpha(18),
-                borderRadius: BorderRadius.circular(20),
+        // Fila superior: número + badges
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '#${pedido.numeroOrden.toString().padLeft(3, '0')}',
+              style: GoogleFonts.cormorantGaramond(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: AppColors.cafeOscuro,
+                height: 1,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.person_outline_rounded,
-                    size: 13,
-                    color: AppColors.verdeOlivo,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      pedido.nombreCliente,
+            ),
+            if (pedido.metodoPago != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.verde.withAlpha(20),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.verde.withAlpha(80)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle_outline_rounded,
+                        size: 11, color: AppColors.verdeOscuro),
+                    const SizedBox(width: 3),
+                    Text(
+                      pedido.metodoPago!.etiqueta,
+                      style: GoogleFonts.nunito(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.verdeOscuro,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (pedido.mesa != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.cremaOscura,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.table_restaurant_outlined,
+                        size: 13, color: AppColors.cafeMedio),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Mesa ${pedido.mesa}',
                       style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.verdeOlivo,
+                        color: AppColors.cafeMedio,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ],
+            const Spacer(),
+            _TimerBadge(
+              color: color,
+              label: ctrl.etiquetaTiempo(pedido.fechaCreacion),
             ),
-          ),
-        ],
-        if (pedido.mesa != null) ...[
-          const SizedBox(width: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.cremaOscura,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.table_restaurant_outlined,
-                  size: 13,
-                  color: AppColors.cafeMedio,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Mesa ${pedido.mesa}',
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.cafeMedio,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-        const Spacer(),
-        _TimerBadge(
-          color: color,
-          label: ctrl.etiquetaTiempo(pedido.fechaCreacion),
+          ],
         ),
+        // Fila inferior: nombre del cliente
+        if (pedido.nombreCliente.isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Row(
+            children: [
+              const Icon(Icons.person_outline_rounded,
+                  size: 13, color: AppColors.verdeOlivo),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  pedido.nombreCliente,
+                  style: GoogleFonts.nunito(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.verdeOlivo,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -394,59 +411,107 @@ class _ItemTile extends StatelessWidget {
     final tieneSalsas = item.salsas.isNotEmpty;
     final tieneIngredientes = item.ingredientes.isNotEmpty;
 
+    final esEntrada = item.categoria == 'entradas';
+    final esBebida = item.categoria == 'bebidas';
+    final Color categoriaColor = esEntrada
+        ? AppColors.naranja
+        : esBebida
+            ? AppColors.azulBebida
+            : AppColors.cafeMedio;
+    final String? categoriaLabel =
+        esEntrada ? 'Entrada' : esBebida ? 'Bebida' : null;
+
     return Padding(
       padding: EdgeInsets.only(bottom: ultimo ? 0 : 10),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _CantidadBadge(cantidad: item.cantidad),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  item.nombre,
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.cafeOscuro,
-                    height: 1.2,
-                  ),
-                ),
-              ),
-            ],
+          // Franja izquierda de categoría
+          Container(
+            width: 3,
+            margin: const EdgeInsets.only(right: 8, top: 2, bottom: 2),
+            decoration: BoxDecoration(
+              color: categoriaColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          if (tieneIngredientes) ...[
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.only(left: 42),
-              child: Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                children: item.ingredientes
-                    .map((ing) => _IngredienteChip(texto: ing))
-                    .toList(),
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _CantidadBadge(cantidad: item.cantidad),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        item.nombre,
+                        style: GoogleFonts.nunito(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.cafeOscuro,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    if (categoriaLabel != null) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: categoriaColor.withAlpha(25),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: categoriaColor.withAlpha(120), width: 1),
+                        ),
+                        child: Text(
+                          categoriaLabel,
+                          style: GoogleFonts.nunito(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: categoriaColor,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (tieneIngredientes) ...[
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 42),
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: item.ingredientes
+                          .map((ing) => _IngredienteChip(texto: ing))
+                          .toList(),
+                    ),
+                  ),
+                ],
+                if (tieneSalsas) ...[
+                  const SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 42),
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: item.salsas
+                          .map((s) => _SalsaChip(texto: s))
+                          .toList(),
+                    ),
+                  ),
+                ],
+                if (!ultimo) ...[
+                  const SizedBox(height: 10),
+                  const Divider(height: 1, thickness: 0.6, indent: 42),
+                ],
+              ],
             ),
-          ],
-          if (tieneSalsas) ...[
-            const SizedBox(height: 5),
-            Padding(
-              padding: const EdgeInsets.only(left: 42),
-              child: Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                children: item.salsas
-                    .map((s) => _SalsaChip(texto: s))
-                    .toList(),
-              ),
-            ),
-          ],
-          if (!ultimo) ...[
-            const SizedBox(height: 10),
-            const Divider(height: 1, thickness: 0.6, indent: 42),
-          ],
+          ),
         ],
       ),
     );

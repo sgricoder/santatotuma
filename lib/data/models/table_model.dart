@@ -35,6 +35,7 @@ class TableModel {
   final List<String> ordenesActivas;
   final double totalAcumulado;
   final DateTime? fechaApertura;
+  final String nombreCliente;
 
   const TableModel({
     required this.numero,
@@ -42,6 +43,7 @@ class TableModel {
     this.ordenesActivas = const [],
     this.totalAcumulado = 0,
     this.fechaApertura,
+    this.nombreCliente = '',
   });
 
   factory TableModel.fromFirestore(
@@ -56,6 +58,7 @@ class TableModel {
       fechaApertura: d['fechaApertura'] != null
           ? (d['fechaApertura'] as Timestamp).toDate()
           : null,
+      nombreCliente: d['nombreCliente'] as String? ?? '',
     );
   }
 
@@ -66,6 +69,7 @@ class TableModel {
         'totalAcumulado': totalAcumulado,
         'fechaApertura':
             fechaApertura != null ? Timestamp.fromDate(fechaApertura!) : null,
+        'nombreCliente': nombreCliente,
       };
 
   TableModel copyWith({
@@ -73,6 +77,7 @@ class TableModel {
     List<String>? ordenesActivas,
     double? totalAcumulado,
     DateTime? fechaApertura,
+    String? nombreCliente,
   }) =>
       TableModel(
         numero: numero,
@@ -80,6 +85,7 @@ class TableModel {
         ordenesActivas: ordenesActivas ?? this.ordenesActivas,
         totalAcumulado: totalAcumulado ?? this.totalAcumulado,
         fechaApertura: fechaApertura ?? this.fechaApertura,
+        nombreCliente: nombreCliente ?? this.nombreCliente,
       );
 
   bool get estaLibre => estado == EstadoMesa.libre;

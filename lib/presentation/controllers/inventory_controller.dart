@@ -303,13 +303,13 @@ class _MovimientoSheetState extends State<_MovimientoSheet>
       Get.snackbar(
         _tab.index == 0 ? 'Entrada registrada' : 'Salida registrada',
         '${widget.insumo.nombre}: ${_tab.index == 0 ? '+' : '-'}$cantidadVal ${widget.insumo.unidad}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(12),
       );
     } catch (e) {
       Get.snackbar('Error', 'No se pudo registrar el movimiento',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       if (mounted) setState(() => _enviando = false);
     }

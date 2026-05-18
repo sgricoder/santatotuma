@@ -38,7 +38,7 @@ class TablesScreen extends GetView<TablesController> {
             crossAxisCount: 3,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 0.9,
+            childAspectRatio: 0.75,
           ),
           itemCount: controller.mesas.length,
           itemBuilder: (_, i) => _MesaCard(
@@ -70,15 +70,15 @@ class _MesaCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
-          color: esLibre ? Colors.white : color,
+          color: esLibre ? AppColors.verdeClaro : color,
           borderRadius: BorderRadius.circular(18),
           border: esLibre
-              ? Border.all(color: AppColors.cremaOscura, width: 1.5)
+              ? Border.all(color: AppColors.verde.withAlpha(80), width: 1.5)
               : null,
           boxShadow: [
             BoxShadow(
               color: esLibre
-                  ? AppColors.cafeOscuro.withAlpha(15)
+                  ? AppColors.verde.withAlpha(20)
                   : color.withAlpha(70),
               blurRadius: esLibre ? 6 : 14,
               offset: const Offset(0, 4),
@@ -102,46 +102,95 @@ class _MesaCard extends StatelessWidget {
                   Text(
                     '${mesa.numero}',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 34,
                       fontWeight: FontWeight.w900,
-                      color: esLibre ? AppColors.cafeMedio : Colors.white,
+                      color: esLibre ? AppColors.verdeProfundo : Colors.white,
                       height: 1,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  // Nombre cliente
+                  if (!esLibre && mesa.nombreCliente.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(45),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        mesa.nombreCliente,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 2),
                   // Estado
                   Text(
                     mesa.estado.etiqueta,
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
                       color: esLibre
-                          ? AppColors.textoSecundario
-                          : Colors.white.withAlpha(220),
+                          ? AppColors.verdeOscuro
+                          : Colors.white.withAlpha(200),
                       letterSpacing: 0.3,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  // Total
-                  if (mesa.totalAcumulado > 0) ...[
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(30),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        CurrencyFormatter.format(mesa.totalAcumulado),
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                  // Resumen de lo pedido
+                  if (!esLibre)
+                    Obx(() {
+                      final resumen = ctrl.resumenItemsMesa(mesa.numero);
+                      if (resumen.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Text(
+                          resumen,
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withAlpha(210),
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }),
+                  // Total (calculado desde órdenes activas, siempre fresco)
+                  Obx(() {
+                    final total = ctrl.totalActivoMesa(mesa.numero);
+                    if (total <= 0) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(30),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          CurrencyFormatter.format(total),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    );
+                  }),
                 ],
               ),
             ),

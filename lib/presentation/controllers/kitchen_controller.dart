@@ -9,8 +9,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/order_model.dart';
+import '../../data/models/tesoreria_model.dart';
 import '../../data/repositories/order_repository.dart';
 import '../../data/repositories/table_repository.dart';
+import '../../data/repositories/tesoreria_repository.dart';
 
 class KitchenController extends GetxController {
   OrderRepository get _repo => Get.find<OrderRepository>();
@@ -75,19 +77,35 @@ class KitchenController extends GetxController {
     return mins < 1 ? 'Ahora' : '$mins min';
   }
 
-  Future<void> marcarDespachado(String id) async {
-    if (despachando.contains(id)) return;
-    despachando.add(id);
+  Future<void> marcarDespachado(OrderModel pedido) async {
+    if (despachando.contains(pedido.id)) return;
+    despachando.add(pedido.id);
     try {
-      await _repo.marcarDespachado(id);
+      if (pedido.metodoPago != null) {
+        // Pre-pagado: pasa directo a pagado y libera la mesa
+        await _repo.marcarPagado(pedido.id, pedido.metodoPago!);
+        if (pedido.mesa != null) {
+          await Get.find<TableRepository>()
+              .quitarPedido(pedido.mesa!, pedido.id, pedido.total);
+        }
+        await _registrarPago(
+          metodo: pedido.metodoPago!,
+          monto: pedido.total,
+          numeroOrden: pedido.numeroOrden,
+          nombreCliente: pedido.nombreCliente,
+          mesa: pedido.mesa,
+        );
+      } else {
+        await _repo.marcarDespachado(pedido.id);
+      }
       HapticFeedback.heavyImpact();
     } catch (_) {
       Get.snackbar(
         'Error',
         'No se pudo actualizar el pedido',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
-      despachando.remove(id);
+      despachando.remove(pedido.id);
     }
   }
 
@@ -104,7 +122,7 @@ class KitchenController extends GetxController {
       Get.snackbar(
         'Pedido cancelado',
         'Orden #${pedido.numeroOrden.toString().padLeft(3, '0')} cancelada',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(12),
       );
@@ -112,7 +130,7 @@ class KitchenController extends GetxController {
       Get.snackbar(
         'Error',
         'No se pudo cancelar el pedido',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
       despachando.remove(pedido.id);
@@ -129,22 +147,56 @@ class KitchenController extends GetxController {
     );
   }
 
-  Future<void> cobrarSinMesa(String id, MetodoPago metodo) async {
-    if (despachando.contains(id)) return;
-    despachando.add(id);
+  Future<void> cobrarSinMesa(OrderModel pedido, MetodoPago metodo) async {
+    if (despachando.contains(pedido.id)) return;
+    despachando.add(pedido.id);
     try {
-      await _repo.marcarPagado(id, metodo);
+      await _repo.marcarPagado(pedido.id, metodo);
+      await _registrarPago(
+        metodo: metodo,
+        monto: pedido.total,
+        numeroOrden: pedido.numeroOrden,
+        nombreCliente: pedido.nombreCliente,
+        mesa: pedido.mesa,
+      );
       HapticFeedback.heavyImpact();
-      Get.back(); // cierra el sheet
+      Get.back();
     } catch (_) {
       Get.snackbar(
         'Error',
         'No se pudo registrar el cobro',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
-      despachando.remove(id);
+      despachando.remove(pedido.id);
     }
+  }
+
+  Future<void> _registrarPago({
+    required MetodoPago metodo,
+    required double monto,
+    required int numeroOrden,
+    required String nombreCliente,
+    int? mesa,
+  }) async {
+    final tipo = metodo == MetodoPago.efectivo
+        ? TipoMovimiento.ingresoCaja
+        : TipoMovimiento.consignacionBancolombia;
+    final String concepto;
+    if (mesa != null && nombreCliente.isNotEmpty) {
+      concepto = 'Mesa $mesa · $nombreCliente';
+    } else if (nombreCliente.isNotEmpty) {
+      concepto = '#${numeroOrden.toString().padLeft(3, '0')} · $nombreCliente';
+    } else {
+      concepto = 'Pedido #${numeroOrden.toString().padLeft(3, '0')}';
+    }
+    await Get.find<TesoreriaRepository>().registrarMovimiento(MovimientoTes(
+      id: '',
+      tipo: tipo,
+      concepto: concepto,
+      monto: monto,
+      hora: DateTime.now(),
+    ));
   }
 }
 
@@ -314,7 +366,7 @@ class _CobroSinMesaSheetState extends State<_CobroSinMesaSheet> {
                       _inputCtrl.clear();
                     }),
                     onCobrar: () =>
-                        widget.ctrl.cobrarSinMesa(widget.pedido.id, MetodoPago.efectivo),
+                        widget.ctrl.cobrarSinMesa(widget.pedido, MetodoPago.efectivo),
                     procesando:
                         widget.ctrl.despachando.contains(widget.pedido.id),
                   )
@@ -324,7 +376,7 @@ class _CobroSinMesaSheetState extends State<_CobroSinMesaSheet> {
                         widget.ctrl.despachando.contains(widget.pedido.id),
                     onEfectivo: () => setState(() => _modoEfectivo = true),
                     onBancolombia: () => widget.ctrl
-                        .cobrarSinMesa(widget.pedido.id, MetodoPago.bancolombia),
+                        .cobrarSinMesa(widget.pedido, MetodoPago.bancolombia),
                   ),
           ),
         ],

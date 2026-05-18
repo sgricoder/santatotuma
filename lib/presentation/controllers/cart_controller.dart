@@ -4,8 +4,10 @@ import 'package:uuid/uuid.dart';
 
 import '../../data/models/order_model.dart';
 import '../../data/models/product_model.dart';
+import '../../data/models/tesoreria_model.dart';
 import '../../data/repositories/order_repository.dart';
 import '../../data/repositories/table_repository.dart';
+import '../../data/repositories/tesoreria_repository.dart';
 import 'home_controller.dart';
 
 class CartController extends GetxController {
@@ -38,6 +40,7 @@ class CartController extends GetxController {
         subtotal: producto.precio,
         ingredientes: producto.ingredientes,
         salsas: salsas,
+        categoria: producto.categoria.name,
       ));
     }
   }
@@ -70,6 +73,72 @@ class CartController extends GetxController {
     nombreCliente.value = '';
   }
 
+  Future<void> confirmarConPago(MetodoPago metodo) async {
+    if (items.isEmpty || enviando.value) return;
+    enviando.value = true;
+    try {
+      final pedido = OrderModel(
+        id: const Uuid().v4(),
+        numeroOrden: 0,
+        items: List<OrderItemModel>.from(items),
+        total: total,
+        estado: EstadoPedido.cocina,
+        mesa: mesa.value,
+        observaciones: notas.value.trim(),
+        nombreCliente: nombreCliente.value.trim(),
+        fechaCreacion: DateTime.now(),
+        fechaActualizacion: DateTime.now(),
+        metodoPago: metodo,
+      );
+
+      final nuevo = await _orderRepo.crear(pedido);
+
+      if (mesa.value != null) {
+        await _tableRepo.agregarPedido(
+          mesa.value!, nuevo.id, nuevo.total,
+          nombreCliente: nuevo.nombreCliente,
+        );
+      }
+
+      final tipo = metodo == MetodoPago.efectivo
+          ? TipoMovimiento.ingresoCaja
+          : TipoMovimiento.consignacionBancolombia;
+      final concepto = nuevo.nombreCliente.isNotEmpty
+          ? '#${nuevo.numeroOrden.toString().padLeft(3, '0')} · ${nuevo.nombreCliente}'
+          : 'Pedido #${nuevo.numeroOrden.toString().padLeft(3, '0')}';
+      await Get.find<TesoreriaRepository>().registrarMovimiento(MovimientoTes(
+        id: '',
+        tipo: tipo,
+        concepto: concepto,
+        monto: nuevo.total,
+        hora: DateTime.now(),
+      ));
+
+      limpiar();
+      Get.back(); // cierra carrito
+      Get.find<HomeController>().changeTo(1);
+
+      Get.snackbar(
+        '¡Pedido enviado y cobrado! ✓',
+        'Orden #${nuevo.numeroOrden.toString().padLeft(3, '0')} · ${metodo.etiqueta}',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(12),
+      );
+    } catch (e) {
+      debugPrint('❌ confirmarConPago() error: $e');
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 6),
+        margin: const EdgeInsets.all(12),
+      );
+    } finally {
+      enviando.value = false;
+    }
+  }
+
   Future<void> confirmar() async {
     if (items.isEmpty || enviando.value) return;
     enviando.value = true;
@@ -90,7 +159,10 @@ class CartController extends GetxController {
       final nuevo = await _orderRepo.crear(pedido);
 
       if (mesa.value != null) {
-        await _tableRepo.agregarPedido(mesa.value!, nuevo.id, nuevo.total);
+        await _tableRepo.agregarPedido(
+          mesa.value!, nuevo.id, nuevo.total,
+          nombreCliente: nuevo.nombreCliente,
+        );
       }
 
       limpiar();
@@ -100,7 +172,7 @@ class CartController extends GetxController {
       Get.snackbar(
         '¡Pedido enviado! 🔥',
         'Orden #${nuevo.numeroOrden.toString().padLeft(3, '0')} en cocina',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(12),
       );
@@ -109,7 +181,7 @@ class CartController extends GetxController {
       Get.snackbar(
         'Error',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 6),
         margin: const EdgeInsets.all(12),
       );

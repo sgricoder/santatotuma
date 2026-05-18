@@ -37,20 +37,20 @@ class TableRepository {
   Future<void> agregarPedido(
     int mesa,
     String ordenId,
-    double montoOrden,
-  ) async {
+    double montoOrden, {
+    String nombreCliente = '',
+  }) async {
+    final data = <String, dynamic>{
+      'numero': mesa,
+      'estado': EstadoMesa.ocupada.valor,
+      'ordenesActivas': FieldValue.arrayUnion([ordenId]),
+      'totalAcumulado': FieldValue.increment(montoOrden),
+      'fechaApertura': FieldValue.serverTimestamp(),
+    };
+    if (nombreCliente.isNotEmpty) data['nombreCliente'] = nombreCliente;
     await _col
         .doc(mesa.toString())
-        .set(
-          {
-            'numero': mesa,
-            'estado': EstadoMesa.ocupada.valor,
-            'ordenesActivas': FieldValue.arrayUnion([ordenId]),
-            'totalAcumulado': FieldValue.increment(montoOrden),
-            'fechaApertura': FieldValue.serverTimestamp(),
-          },
-          SetOptions(merge: true),
-        )
+        .set(data, SetOptions(merge: true))
         .timeout(const Duration(milliseconds: 800), onTimeout: () {});
   }
 
@@ -95,6 +95,7 @@ class TableRepository {
           'ordenesActivas': [],
           'totalAcumulado': 0,
           'fechaApertura': null,
+          'nombreCliente': '',
         })
         .timeout(const Duration(milliseconds: 800), onTimeout: () {});
   }

@@ -10,8 +10,10 @@ import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/thousands_formatter.dart';
 import '../../data/models/order_model.dart';
 import '../../data/models/table_model.dart';
+import '../../data/models/tesoreria_model.dart';
 import '../../data/repositories/order_repository.dart';
 import '../../data/repositories/table_repository.dart';
+import '../../data/repositories/tesoreria_repository.dart';
 
 class TablesController extends GetxController {
   TableRepository get _tableRepo => Get.find<TableRepository>();
@@ -20,8 +22,10 @@ class TablesController extends GetxController {
   final mesas = <TableModel>[].obs;
   final cargando = true.obs;
   final procesando = RxSet<int>({});
+  final ordenesPorMesa = <int, List<OrderModel>>{}.obs;
 
   StreamSubscription? _sub;
+  StreamSubscription? _subOrdenes;
 
   @override
   void onInit() {
@@ -37,12 +41,43 @@ class TablesController extends GetxController {
         cargando.value = false;
       },
     );
+    _subOrdenes = _orderRepo.watchActivas().listen((orders) {
+      final mapa = <int, List<OrderModel>>{};
+      for (final o in orders) {
+        if (o.mesa != null) {
+          mapa.putIfAbsent(o.mesa!, () => []).add(o);
+        }
+      }
+      ordenesPorMesa.value = mapa;
+    });
   }
 
   @override
   void onClose() {
     _sub?.cancel();
+    _subOrdenes?.cancel();
     super.onClose();
+  }
+
+  double totalActivoMesa(int numeroMesa) {
+    final orders = ordenesPorMesa[numeroMesa] ?? [];
+    return orders.fold(0.0, (sum, o) => sum + o.total);
+  }
+
+  String resumenItemsMesa(int numeroMesa) {
+    final orders = ordenesPorMesa[numeroMesa] ?? [];
+    if (orders.isEmpty) return '';
+    final conteo = <String, int>{};
+    for (final o in orders) {
+      for (final item in o.items) {
+        conteo[item.nombre] = (conteo[item.nombre] ?? 0) + item.cantidad;
+      }
+    }
+    if (conteo.isEmpty) return '';
+    final entries = conteo.entries.toList();
+    final partes = entries.take(2).map((e) => '${e.value}× ${e.key}').toList();
+    if (entries.length > 2) partes.add('+${entries.length - 2}');
+    return partes.join(' · ');
   }
 
   Color colorEstado(EstadoMesa estado) => switch (estado) {
@@ -62,6 +97,24 @@ class TablesController extends GetxController {
     );
   }
 
+  Future<void> marcarPendienteCobro(int numeroMesa) async {
+    try {
+      await _tableRepo.marcarPendienteCobro(numeroMesa);
+      HapticFeedback.mediumImpact();
+      Get.back();
+      Get.snackbar(
+        'Mesa $numeroMesa — Cobra después',
+        'El cliente regresará a pagar',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(12),
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'No se pudo actualizar el estado',
+          snackPosition: SnackPosition.TOP);
+    }
+  }
+
   Future<void> cobrar(int numeroMesa, MetodoPago metodo) async {
     if (procesando.contains(numeroMesa)) return;
     procesando.add(numeroMesa);
@@ -73,13 +126,29 @@ class TablesController extends GetxController {
         ...mesa.ordenesActivas.map((id) => _orderRepo.marcarPagado(id, metodo)),
         _tableRepo.cerrar(numeroMesa),
       ]);
+
+      final tipo = metodo == MetodoPago.efectivo
+          ? TipoMovimiento.ingresoCaja
+          : TipoMovimiento.consignacionBancolombia;
+      final concepto = mesa.nombreCliente.isNotEmpty
+          ? 'Mesa $numeroMesa · ${mesa.nombreCliente}'
+          : 'Mesa $numeroMesa';
+      final montoReal = totalActivoMesa(numeroMesa);
+      await Get.find<TesoreriaRepository>().registrarMovimiento(MovimientoTes(
+        id: '',
+        tipo: tipo,
+        concepto: concepto,
+        monto: montoReal,
+        hora: DateTime.now(),
+      ));
+
       HapticFeedback.mediumImpact();
 
       Get.back();
       Get.snackbar(
         'Mesa $numeroMesa cobrada',
-        '${metodo.etiqueta} · ${CurrencyFormatter.format(mesa.totalAcumulado)}',
-        snackPosition: SnackPosition.BOTTOM,
+        '${metodo.etiqueta} · ${CurrencyFormatter.format(montoReal)}',
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(12),
       );
@@ -88,7 +157,7 @@ class TablesController extends GetxController {
       Get.snackbar(
         'Error',
         'No se pudo procesar el pago',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
       procesando.remove(numeroMesa);
@@ -121,11 +190,12 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
     super.dispose();
   }
 
-  double get _vuelto => _recibido - widget.mesa.totalAcumulado;
-  bool get _suficiente => _recibido >= widget.mesa.totalAcumulado;
+  double get _totalActivo => widget.ctrl.totalActivoMesa(widget.mesa.numero);
+  double get _vuelto => _recibido - _totalActivo;
+  bool get _suficiente => _recibido >= _totalActivo;
 
   List<double> _sugeridos() {
-    final total = widget.mesa.totalAcumulado;
+    final total = _totalActivo;
     final result = <double>{total};
     final next5k = ((total / 5000).ceil() * 5000).toDouble();
     if (next5k > total) result.add(next5k);
@@ -146,6 +216,23 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
 
   void _onTextoChanged(String text) {
     setState(() => _recibido = ThousandsFormatter.parse(text) ?? 0);
+  }
+
+  void _mostrarDetallePedido(BuildContext context) {
+    final orders =
+        widget.ctrl.ordenesPorMesa[widget.mesa.numero] ?? [];
+    if (orders.isEmpty) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _DetallesPedidoSheet(
+        mesa: widget.mesa,
+        orders: orders,
+        totalActivo: _totalActivo,
+      ),
+    );
   }
 
   @override
@@ -196,53 +283,111 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
                 ),
               ),
               const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Mesa ${widget.mesa.numero}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.cafeOscuro,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mesa ${widget.mesa.numero}',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.cafeOscuro,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  _EstadoBadge(estado: widget.mesa.estado, color: color),
-                ],
+                    if (widget.mesa.nombreCliente.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded,
+                              size: 13, color: AppColors.cafeMedio),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              widget.mesa.nombreCliente,
+                              style: GoogleFonts.nunito(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.cafeMedio,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 4),
+                    _EstadoBadge(estado: widget.mesa.estado, color: color),
+                  ],
+                ),
               ),
             ],
           ),
 
-          if (widget.mesa.totalAcumulado > 0) ...[
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-              decoration: BoxDecoration(
-                color: AppColors.verdeClaro,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total acumulado',
-                    style: TextStyle(fontSize: 15, color: AppColors.cafeMedio),
+          Obx(() {
+            final total = _totalActivo;
+            if (total <= 0) return const SizedBox.shrink();
+            return Column(
+              children: [
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 14, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.verdeClaro,
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  Text(
-                    CurrencyFormatter.format(widget.mesa.totalAcumulado),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.cafeOscuro,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total pendiente',
+                        style: TextStyle(
+                            fontSize: 15, color: AppColors.cafeMedio),
+                      ),
+                      Text(
+                        CurrencyFormatter.format(total),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.cafeOscuro,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              ],
+            );
+          }),
+
+          // Botón "Ver pedido completo"
+          Obx(() {
+            final orders =
+                widget.ctrl.ordenesPorMesa[widget.mesa.numero] ?? [];
+            if (orders.isEmpty) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _mostrarDetallePedido(context),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 16),
+                  label: const Text('Ver pedido completo'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.cafeMedio,
+                    side:
+                        const BorderSide(color: AppColors.cremaOscura, width: 1),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    textStyle: GoogleFonts.nunito(
+                        fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
-            ),
-          ],
+            );
+          }),
 
           if (esPagable) ...[
             const SizedBox(height: 20),
@@ -262,7 +407,7 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
               child: _modoEfectivo
                   ? _PanelEfectivo(
                       key: const ValueKey('efectivo'),
-                      total: widget.mesa.totalAcumulado,
+                      total: _totalActivo,
                       recibido: _recibido,
                       vuelto: _vuelto,
                       suficiente: _suficiente,
@@ -290,6 +435,32 @@ class _MesaDetalleSheetState extends State<_MesaDetalleSheet> {
                       onBancolombia: () => widget.ctrl
                           .cobrar(widget.mesa.numero, MetodoPago.bancolombia),
                     ),
+            ),
+          ],
+
+          // Botón "Cobrar después" — solo cuando está ocupada
+          if (widget.mesa.estado == EstadoMesa.ocupada) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () =>
+                    widget.ctrl.marcarPendienteCobro(widget.mesa.numero),
+                icon: const Icon(Icons.schedule_rounded, size: 18),
+                label: const Text('El cliente paga después'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.cafeMedio,
+                  side: const BorderSide(color: AppColors.cafeMedio, width: 1),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  textStyle: GoogleFonts.nunito(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ],
 
@@ -745,6 +916,206 @@ class _BotonPago extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+}
+
+// ── Sheet de detalles del pedido ──────────────────────────────────────────
+
+class _DetallesPedidoSheet extends StatelessWidget {
+  final TableModel mesa;
+  final List<OrderModel> orders;
+  final double totalActivo;
+
+  const _DetallesPedidoSheet({
+    required this.mesa,
+    required this.orders,
+    required this.totalActivo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.verdeClaro,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.receipt_long_rounded,
+                      color: AppColors.verdeProfundo, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pedido · Mesa ${mesa.numero}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.cafeOscuro,
+                        ),
+                      ),
+                      if (mesa.nombreCliente.isNotEmpty)
+                        Text(
+                          mesa.nombreCliente,
+                          style: const TextStyle(
+                              fontSize: 13, color: AppColors.cafeMedio),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Lista de ítems (scrollable)
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (orders.length == 1)
+                    _OrdenItems(order: orders.first)
+                  else
+                    ...orders.asMap().entries.map((e) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (e.key > 0) const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.cremaOscura,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Orden #${e.value.numeroOrden}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.cafeOscuro,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _OrdenItems(order: e.value),
+                          ],
+                        )),
+                  const SizedBox(height: 8),
+                  const Divider(color: AppColors.cremaOscura),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total pendiente',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.cafeOscuro,
+                        ),
+                      ),
+                      Text(
+                        CurrencyFormatter.format(totalActivo),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.cafeOscuro,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrdenItems extends StatelessWidget {
+  final OrderModel order;
+  const _OrdenItems({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: order.items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: AppColors.cremaOscura,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${item.cantidad}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.cafeOscuro,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      item.nombre,
+                      style: const TextStyle(
+                          fontSize: 14, color: AppColors.cafeOscuro),
+                    ),
+                  ),
+                  Text(
+                    CurrencyFormatter.format(item.subtotal),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.cafeMedio,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }

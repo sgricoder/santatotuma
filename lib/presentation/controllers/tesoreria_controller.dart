@@ -100,7 +100,7 @@ class TesoreriaController extends GetxController {
       await _repo.inicializar(saldoInicial);
     } catch (e) {
       Get.snackbar('Error', 'No se pudo configurar la tesorería',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }
@@ -137,13 +137,13 @@ class TesoreriaController extends GetxController {
       Get.snackbar(
         'Consignación registrada',
         '${CurrencyFormatter.format(monto)} ingresados a tesorería',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(12),
       );
     } catch (e) {
       Get.snackbar('Error', 'No se pudo registrar la consignación',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }
@@ -165,13 +165,13 @@ class TesoreriaController extends GetxController {
       Get.snackbar(
         'Transferencia registrada',
         '${CurrencyFormatter.format(monto)} ingresados a tesorería',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(12),
       );
     } catch (e) {
       Get.snackbar('Error', 'No se pudo registrar la transferencia',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }
@@ -195,7 +195,7 @@ class TesoreriaController extends GetxController {
       await _repo.registrarMovimiento(mov);
     } catch (e) {
       Get.snackbar('Error', 'No se pudo registrar el gasto',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }

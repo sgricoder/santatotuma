@@ -98,7 +98,7 @@ class CashController extends GetxController {
       await _cargarVentasHoy();
     } catch (e) {
       Get.snackbar('Error', 'No se pudo abrir la caja',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }
@@ -119,7 +119,7 @@ class CashController extends GetxController {
       ));
     } catch (e) {
       Get.snackbar('Error', 'No se pudo registrar el gasto',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }
@@ -132,7 +132,7 @@ class CashController extends GetxController {
       await _cargarVentasHoy();
     } catch (e) {
       Get.snackbar('Error', 'No se pudo reabrir la caja',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }
@@ -147,13 +147,13 @@ class CashController extends GetxController {
       Get.snackbar(
         'Caja cerrada',
         'Diferencia: $signo${CurrencyFormatter.format(diferencia)}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 4),
         margin: const EdgeInsets.all(12),
       );
     } catch (e) {
       Get.snackbar('Error', 'No se pudo cerrar la caja',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     } finally {
       procesando.value = false;
     }

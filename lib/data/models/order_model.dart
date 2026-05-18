@@ -35,6 +35,7 @@ class OrderItemModel {
   final double subtotal;
   final List<String> ingredientes;
   final List<String> salsas;
+  final String? categoria;
 
   const OrderItemModel({
     required this.productoId,
@@ -44,6 +45,7 @@ class OrderItemModel {
     required this.subtotal,
     this.ingredientes = const [],
     this.salsas = const [],
+    this.categoria,
   });
 
   factory OrderItemModel.fromMap(Map<String, dynamic> m) => OrderItemModel(
@@ -54,6 +56,7 @@ class OrderItemModel {
         subtotal: (m['subtotal'] as num).toDouble(),
         ingredientes: List<String>.from(m['ingredientes'] as List? ?? []),
         salsas: List<String>.from(m['salsas'] as List? ?? []),
+        categoria: m['categoria'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -64,6 +67,7 @@ class OrderItemModel {
         'subtotal': subtotal,
         'ingredientes': ingredientes,
         'salsas': salsas,
+        if (categoria != null) 'categoria': categoria,
       };
 
   OrderItemModel copyWith({int? cantidad, List<String>? salsas}) {
@@ -76,6 +80,7 @@ class OrderItemModel {
       subtotal: precioUnitario * nuevaCantidad,
       ingredientes: ingredientes,
       salsas: salsas ?? this.salsas,
+      categoria: categoria,
     );
   }
 }

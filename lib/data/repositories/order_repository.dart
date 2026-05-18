@@ -21,6 +21,18 @@ class OrderRepository {
         .map(_mapDocs);
   }
 
+  // Todas las órdenes activas (cocina + despachado) — para resumen en mesas
+  Stream<List<OrderModel>> watchActivas() {
+    if (!_disponible) return const Stream.empty();
+    return _col
+        .where('estado', whereIn: [
+          EstadoPedido.cocina.name,
+          EstadoPedido.despachado.name,
+        ])
+        .snapshots()
+        .map(_mapDocs);
+  }
+
   // Todos los pedidos de una mesa
   Stream<List<OrderModel>> watchPedidosMesa(int mesa) {
     if (!_disponible) return const Stream.empty();
@@ -61,6 +73,8 @@ class OrderRepository {
       estado: EstadoPedido.cocina,
       mesa: pedido.mesa,
       observaciones: pedido.observaciones,
+      nombreCliente: pedido.nombreCliente,
+      metodoPago: pedido.metodoPago,
       fechaCreacion: ahora,
       fechaActualizacion: ahora,
     );
